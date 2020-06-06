@@ -1,0 +1,14 @@
+// A very simple protocol definition, consisting of only
+// one message.
+
+syntax = "proto2";
+
+message LED {
+    required uint32 index = 1;
+    required uint32 color = 2; // wrgba
+}
+
+message NeoPixel {
+    required bool clear = 1;
+    repeated LED strip = 2;
+}
