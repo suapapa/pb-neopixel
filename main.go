@@ -14,7 +14,7 @@ const (
 )
 
 func main() {
-	fmt.Println("HelloWorld")
+	fmt.Println("connecting...")
 	c, err := net.Dial("tcp", "192.168.219.147:8888")
 	chk(err)
 	defer c.Close()
@@ -25,15 +25,16 @@ func main() {
 	time.Sleep(time.Second)
 	fillOneColor(c, 0x0000ff)
 	time.Sleep(time.Second)
-	for i := 0; i < ledCnt; i++ {
-		rainbow(c, i)
-		time.Sleep(400 * time.Millisecond)
+	for i := 0; i < ledCnt*3; i++ {
+		fillRainbow(c, i)
+		time.Sleep(500 * time.Millisecond)
 	}
+	turnOff(c)
 	log.Println("all done")
-	select {}
 }
 
-func rainbow(c net.Conn, start int) {
+func fillRainbow(c net.Conn, start int) {
+	log.Printf("fillRainbow: start %d", start)
 	clear := false
 	m := NeoPixel{
 		Clear: &clear,
@@ -48,9 +49,9 @@ func rainbow(c net.Conn, start int) {
 		}
 		r, g, b := hsv.RGB8()
 		var rgb uint32
-		rgb |= uint32(r) << 16
-		rgb |= uint32(g) << 8
-		rgb |= uint32(b)
+		rgb |= uint32(neopixelGammaTable[r]) << 16
+		rgb |= uint32(neopixelGammaTable[g]) << 8
+		rgb |= uint32(neopixelGammaTable[b])
 		led := LED{
 			Index: &idx,
 			Color: &rgb,
@@ -63,11 +64,14 @@ func rainbow(c net.Conn, start int) {
 }
 
 func fillOneColor(c net.Conn, color uint32) {
-	clear := true
-	m := NeoPixel{
-		Clear: &clear,
-	}
+	log.Printf("fillOneColor, 0x%08d", color)
+	turnOff(c)
+
+	clear := false
 	for i := 0; i < ledCnt; i++ {
+		m := NeoPixel{
+			Clear: &clear,
+		}
 		index := uint32(i)
 		color := uint32(color)
 		led := LED{
@@ -75,8 +79,18 @@ func fillOneColor(c net.Conn, color uint32) {
 			Color: &color,
 		}
 		m.Strip = append(m.Strip, &led)
+		b, err := proto.Marshal(&m)
+		chk(err)
+		c.Write(b)
+		time.Sleep(100 * time.Millisecond)
 	}
+}
 
+func turnOff(c net.Conn) {
+	clear := true
+	m := NeoPixel{
+		Clear: &clear,
+	}
 	b, err := proto.Marshal(&m)
 	chk(err)
 	c.Write(b)
