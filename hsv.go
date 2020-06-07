@@ -1,6 +1,9 @@
 package main
 
-import "math"
+import (
+	"image/color"
+	"math"
+)
 
 // HSV represents HSV color space
 type HSV struct {
@@ -14,15 +17,6 @@ func (c *HSV) RGBA() (r, g, b, a uint32) {
 	g = uint32(math.Round(fg * 0xffffffff))
 	b = uint32(math.Round(fb * 0xffffffff))
 	a = 0xffffffff
-	return
-}
-
-// RGB8 returns byte scaled r, g, b
-func (c *HSV) RGB8() (r, g, b uint8) {
-	fr, fg, fb := c.rgb()
-	r = uint8(math.Round(fr * 0xff))
-	g = uint8(math.Round(fg * 0xff))
-	b = uint8(math.Round(fb * 0xff))
 	return
 }
 
@@ -72,4 +66,16 @@ func (c *HSV) rgb() (r, g, b float64) {
 		// b = b * 255
 	}
 	return r, g, b
+}
+
+func colorToUint32(c color.Color) uint32 {
+	r, g, b, _ := c.RGBA()
+	r >>= 24
+	g >>= 24
+	b >>= 24
+	var rgb uint32
+	rgb |= r << 16
+	rgb |= g << 8
+	rgb |= b
+	return rgb
 }

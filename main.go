@@ -25,7 +25,8 @@ func main() {
 	time.Sleep(time.Second)
 	fillOneColor(c, 0x0000ff)
 	time.Sleep(time.Second)
-	for i := 0; i < ledCnt*3; i++ {
+	// 2 turns
+	for i := 0; i < ledCnt*2; i++ {
 		fillRainbow(c, i)
 		time.Sleep(500 * time.Millisecond)
 	}
@@ -47,11 +48,7 @@ func fillRainbow(c net.Conn, start int) {
 			S: 1,
 			V: 1,
 		}
-		r, g, b := hsv.RGB8()
-		var rgb uint32
-		rgb |= uint32(neopixelGammaTable[r]) << 16
-		rgb |= uint32(neopixelGammaTable[g]) << 8
-		rgb |= uint32(neopixelGammaTable[b])
+		rgb := colorToUint32(hsv)
 		led := LED{
 			Index: &idx,
 			Color: &rgb,
@@ -82,7 +79,7 @@ func fillOneColor(c net.Conn, color uint32) {
 		b, err := proto.Marshal(&m)
 		chk(err)
 		c.Write(b)
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
