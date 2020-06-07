@@ -3,6 +3,8 @@
 
 syntax = "proto2";
 
+option go_package = ".;main";
+
 message LED {
     required uint32 index = 1;
     required uint32 color = 2; // wrgba
