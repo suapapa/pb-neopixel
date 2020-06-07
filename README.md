@@ -4,7 +4,7 @@
 
 Control neopixel with protobuf between;
 
-    go (tcp client) --protobuf_encoded_msg--> esp8266-neopixel
+    go (tcp client) --protobuf_encoded_msg--> esp8266-neopixel (tcp server)
 
 
 The message format is `neopixel.proto`.
