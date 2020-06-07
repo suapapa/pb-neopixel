@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"time"
 
@@ -24,17 +25,21 @@ func main() {
 	time.Sleep(time.Second)
 	fillOneColor(c, 0x0000ff)
 	time.Sleep(time.Second)
-	rainbow(c)
+	for i := 0; i < ledCnt; i++ {
+		rainbow(c, i)
+		time.Sleep(400 * time.Millisecond)
+	}
+	log.Println("all done")
 	select {}
 }
 
-func rainbow(c net.Conn) {
-	clear := true
+func rainbow(c net.Conn, start int) {
+	clear := false
 	m := NeoPixel{
 		Clear: &clear,
 	}
 	for i := 0; i < ledCnt; i++ {
-		idx := uint32(i)
+		idx := uint32((i + start) % ledCnt)
 		pixelHue := float64(i) / ledCnt // TODO: rotate rainbow
 		hsv := &HSV{
 			H: pixelHue,

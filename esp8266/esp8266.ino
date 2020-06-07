@@ -51,7 +51,7 @@ void setup()
 {
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip.setBrightness(150); // Set BRIGHTNESS to about 1/5 (max = 255)
 
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -107,7 +107,7 @@ void loop()
         // read data from the connected client
         int n;
         n = client.read(buffer, BUFFSIZE);
-        Serial.println(n);
+        // Serial.println(n);
 
         ledCnt = 0;
         // parse pb
@@ -143,7 +143,7 @@ bool read_led(pb_istream_t *stream, const pb_field_iter_t *field, void **arg)
 }
 
 void update_neopixel(boolean clear) {
-  Serial.printf("update_neopixel; clear: %d, cnt: %d\n", (int)clear, ledCnt);
+  // Serial.printf("update_neopixel; clear: %d, cnt: %d\n", (int)clear, ledCnt);
   if (clear) {
     strip.clear();
   }
@@ -151,7 +151,7 @@ void update_neopixel(boolean clear) {
   for (int i = 0; i < ledCnt; i++) {
     int32_t idx  = leds[i].index;
     int32_t c = leds[i].color;
-    Serial.printf("led idx: %d, wrgb: 0x%08x\n", idx, c);
+    // Serial.printf("led idx: %d, wrgb: 0x%08x\n", idx, c);
     strip.setPixelColor(idx, c);
   }
 
