@@ -1,5 +1,7 @@
 # pb-neopixel
 
+![photo](photo/pb-neopixel.jpg)
+
 Control neopixel with protobuf between;
 
     go (tcp client) --protobuf_encoded_msg--> esp8266-neopixel
