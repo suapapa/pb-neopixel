@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
 	"log"
 	"net"
@@ -28,14 +29,14 @@ func main() {
 	// 2 turns
 	for i := 0; i < ledCnt*2; i++ {
 		fillRainbow(c, i)
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 	}
 	turnOff(c)
 	log.Println("all done")
 }
 
 func fillRainbow(c net.Conn, start int) {
-	log.Printf("fillRainbow: start %d", start)
+	// log.Printf("fillRainbow: start %d", start)
 	clear := false
 	m := NeoPixel{
 		Clear: &clear,
@@ -57,11 +58,11 @@ func fillRainbow(c net.Conn, start int) {
 	}
 	b, err := proto.Marshal(&m)
 	chk(err)
-	c.Write(b)
+	sendPb(c, b)
 }
 
 func fillOneColor(c net.Conn, color uint32) {
-	log.Printf("fillOneColor, 0x%08d", color)
+	log.Printf("fillOneColor, 0x%08x", color)
 	turnOff(c)
 
 	clear := false
@@ -78,8 +79,8 @@ func fillOneColor(c net.Conn, color uint32) {
 		m.Strip = append(m.Strip, &led)
 		b, err := proto.Marshal(&m)
 		chk(err)
-		c.Write(b)
-		time.Sleep(50 * time.Millisecond)
+		sendPb(c, b)
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
@@ -90,6 +91,15 @@ func turnOff(c net.Conn) {
 	}
 	b, err := proto.Marshal(&m)
 	chk(err)
+	sendPb(c, b)
+}
+
+func sendPb(c net.Conn, b []byte) {
+	lengthBuff := make([]byte, 4)
+	binary.LittleEndian.PutUint32(lengthBuff, uint32(len(b)))
+
+	// log.Println(lengthBuff, b)
+	c.Write(lengthBuff)
 	c.Write(b)
 }
 

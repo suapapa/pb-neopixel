@@ -91,41 +91,50 @@ void setup()
 void loop()
 {
   WiFiClient client = server.available();
-
-  if (client)
-  {
-    if (client.connected())
-    {
-      Serial.println("Client Connected");
-    }
-
-    while (client.connected())
-    {
-      delay(100); // TODO: right?
-      while (client.available() > 0)
-      {
-        // read data from the connected client
-        int n;
-        n = client.read(buffer, BUFFSIZE);
-        // Serial.println(n);
-
-        ledCnt = 0;
-        // parse pb
-        NeoPixel neopixel = NeoPixel_init_default;
-        neopixel.strip.funcs.decode = read_led;
-        pb_istream_t stream = pb_istream_from_buffer(buffer, n);
-        if (!pb_decode(&stream, NeoPixel_fields, &neopixel))
-        {
-          Serial.printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
-          break;
-        }
-        // Serial.printf("clear %d!\n", (int)neopixel.clear);
-        update_neopixel(neopixel.clear);
-      }
-    }
-    client.stop();
-    Serial.println("Client disconnected");
+  if (!client) {
+    return;
   }
+
+  //  unsigned long start_time;
+  //  unsigned long duration_time;
+
+  while (client.connected())
+  {
+    while (client.available() >= 4)
+    {
+
+      uint32_t length = 0;
+      client.read((uint8_t*)&length, 4);
+
+      Serial.printf("reading %d bytes...\n", length);
+
+      // read data from the connected client
+      int startpos = 0;
+      while (length) {
+        delay(10);
+        int n = client.read(buffer + startpos, length);
+        startpos += n;
+        length -= n;
+      }
+
+      //Serial.printf("length %d startpos %d\n", length, startpos);
+      ledCnt = 0;
+      // parse pb
+      NeoPixel neopixel = NeoPixel_init_default;
+      neopixel.strip.funcs.decode = read_led;
+      pb_istream_t stream = pb_istream_from_buffer(buffer, startpos);
+      if (!pb_decode(&stream, NeoPixel_fields, &neopixel))
+      {
+        Serial.printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+        break;
+      }
+      update_neopixel(neopixel.clear);
+    }
+  }
+
+  client.stop();
+  Serial.println("Client disconnected");
+
 }
 
 //=======================================================================
@@ -143,7 +152,7 @@ bool read_led(pb_istream_t *stream, const pb_field_iter_t *field, void **arg)
 }
 
 void update_neopixel(boolean clear) {
-  // Serial.printf("update_neopixel; clear: %d, cnt: %d\n", (int)clear, ledCnt);
+  // Serial.printf("update_neopixel; clear: % d, cnt: % d\n", (int)clear, ledCnt);
   if (clear) {
     strip.clear();
   }
@@ -151,7 +160,7 @@ void update_neopixel(boolean clear) {
   for (int i = 0; i < ledCnt; i++) {
     int32_t idx  = leds[i].index;
     int32_t c = leds[i].color;
-    // Serial.printf("led idx: %d, wrgb: 0x%08x\n", idx, c);
+    // Serial.printf("led idx: % d, wrgb: 0x % 08x\n", idx, c);
     strip.setPixelColor(idx, c);
   }
 
